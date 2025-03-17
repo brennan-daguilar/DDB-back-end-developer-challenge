@@ -1,6 +1,8 @@
 using System.Text.Json.Serialization;
 using CharacterHitpointService.Api;
+using CharacterHitpointService.Hitpoints;
 using FluentValidation;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,6 +18,7 @@ builder.Services.ConfigureHttpJsonOptions(options =>
     options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
 });
 
+builder.Services.AddDbContext<HitpointsDbContext>(options => options.UseSqlite("Data Source=hitpoints.db"));
 
 var app = builder.Build();
 
