@@ -31,8 +31,10 @@ public class DamageCharacterEndpoint : IEndpoint
         return TypedResults.Ok(new DamageCharacterResponse()
         {
             CharacterId = request.CharacterId,
-            Hp = 0,
-            TemporaryHp = 0
+            Before = new CombinedHitpoints(10,5),
+            After = new CombinedHitpoints(5,0),
+            TotalDamage = 10,
+            ResistanceEffect = DamageResistanceEffect.Resisted
         });
     }
 }

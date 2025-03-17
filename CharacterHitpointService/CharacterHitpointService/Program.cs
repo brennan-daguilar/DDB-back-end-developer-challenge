@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using CharacterHitpointService.Api;
 using FluentValidation;
 
@@ -9,6 +10,12 @@ builder.Services.AddOpenApi();
 builder.Services.AddProblemDetails();
 builder.Services.AddApiEndpoints();
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
+
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
+});
+
 
 var app = builder.Build();
 
