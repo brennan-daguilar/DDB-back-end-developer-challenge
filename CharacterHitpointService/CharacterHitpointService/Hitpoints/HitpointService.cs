@@ -16,7 +16,7 @@ public class HitpointService
         _dbContext = dbContext;
     }
 
-    private async Task<CharacterHealthState> GetCharacterHealthStateAsync(string characterId)
+    public async Task<CharacterHealthState> GetCharacterHealthStateAsync(string characterId)
     {
         var healthState = await _dbContext.CharacterHealthStates
             .FirstOrDefaultAsync(s => s.CharacterId == characterId);
@@ -26,7 +26,7 @@ public class HitpointService
         return await InitializeCharacterHealthStateAsync(characterId);
     }
 
-    private async Task<CharacterHealthState> InitializeCharacterHealthStateAsync(string characterId)
+    public async Task<CharacterHealthState> InitializeCharacterHealthStateAsync(string characterId)
     {
         var character = await _characterService.GetCharacterAsync(characterId);
         if (character == null)
@@ -63,6 +63,11 @@ public class HitpointService
     public async Task<DamageCharacterResponse> DamageCharacterAsync(string characterId, int damage,
         DamageType damageType)
     {
+        if (damage < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(damage), "Damage must be a positive number.");
+        }
+        
         var character = await _characterService.GetCharacterAsync(characterId);
         var health = await GetCharacterHealthStateAsync(characterId);
         if (character == null)
