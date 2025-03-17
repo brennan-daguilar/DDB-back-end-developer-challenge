@@ -2,6 +2,8 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CharacterHitpointService", "CharacterHitpointService\CharacterHitpointService.csproj", "{6BD10A13-9638-4BDC-AA4C-329560D9488F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test", "Test\Test.csproj", "{2E53376D-5BA8-406A-A034-368964AC873F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +14,9 @@ Global
 		{6BD10A13-9638-4BDC-AA4C-329560D9488F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6BD10A13-9638-4BDC-AA4C-329560D9488F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6BD10A13-9638-4BDC-AA4C-329560D9488F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2E53376D-5BA8-406A-A034-368964AC873F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2E53376D-5BA8-406A-A034-368964AC873F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2E53376D-5BA8-406A-A034-368964AC873F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2E53376D-5BA8-406A-A034-368964AC873F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

@@ -85,11 +85,11 @@ public class HitpointService
 
         switch (defense)
         {
-            case DefenseValue.Immune:
+            case DefenseValue.Immunity:
                 modifiedDamage = 0;
                 resistanceEffect = DamageResistanceEffect.Immune;
                 break;
-            case DefenseValue.Resistant:
+            case DefenseValue.Resistance:
                 modifiedDamage = damage / 2;
                 resistanceEffect = DamageResistanceEffect.Resisted;
                 break;

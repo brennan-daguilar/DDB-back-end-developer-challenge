@@ -1,6 +1,6 @@
 ﻿namespace CharacterHitpointService.Models;
 
-public class CombinedHitpoints
+public record CombinedHitpoints
 {
     public int Hitpoints { get; set; }
     public int TemporaryHitpoints { get; set; }

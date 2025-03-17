@@ -2,8 +2,8 @@
 
 public enum DefenseValue
 {
-    Vulnerable = -1,
+    Vulnerability = -1,
     None = 0,
-    Resistant = 1,
-    Immune = 2
+    Resistance = 1,
+    Immunity = 2
 }
