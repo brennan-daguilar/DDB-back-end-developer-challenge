@@ -1,6 +1,13 @@
 @CharacterHitpointService_HostAddress = http://localhost:5102
 
-GET {{CharacterHitpointService_HostAddress}}/weatherforecast/
+POST {{HitpointService_HostAddress}}/damage/
 Accept: application/json
+Content-Type: application/json
+
+{
+  "characterId": "briv",
+  "damage": 10,
+  "type": "acid"
+}
 
 ###
