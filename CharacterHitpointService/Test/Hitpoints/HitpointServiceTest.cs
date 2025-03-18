@@ -29,21 +29,21 @@ public class HitpointServiceTest : IClassFixture<TestDatabaseFixture>
 
         var service = new HitpointService(characterService.Object, dbContext);
 
-
         // Act
-        await service.InitializeCharacterHealthStateAsync("briv");
+        var result = await service.InitializeCharacterHealthStateAsync("briv");
         dbContext.ChangeTracker.Clear();
         var charStatus = await dbContext.CharacterHealthStates.FindAsync("briv");
 
 
         // Assert
+        result.ShouldNotBeNull();
         charStatus.ShouldNotBeNull();
         charStatus.Hitpoints.ShouldBe(25);
         charStatus.TemporaryHitpoints.ShouldBe(0);
     }
 
     [Fact]
-    public async Task InitializeCharacterHealthStateAsync_WithUnknownCharacter_ShouldThrowException()
+    public async Task InitializeCharacterHealthStateAsync_WithUnknownCharacter_ShouldFail()
     {
         // Arrange
         await using var dbContext = Fixture.CreateContext();
@@ -54,16 +54,14 @@ public class HitpointServiceTest : IClassFixture<TestDatabaseFixture>
 
         var service = new HitpointService(characterService.Object, dbContext);
 
-
         // Act
-        await Should.ThrowAsync<ArgumentException>(async () =>
-            await service.InitializeCharacterHealthStateAsync("briv")
-        );
+        var result = await service.InitializeCharacterHealthStateAsync("briv");
         dbContext.ChangeTracker.Clear();
         var charStatus = await dbContext.CharacterHealthStates.FindAsync("briv");
 
 
         // Assert
+        result.ShouldBeNull();
         charStatus.ShouldBeNull();
     }
 
@@ -103,11 +101,14 @@ public class HitpointServiceTest : IClassFixture<TestDatabaseFixture>
         var charStatus = await dbContext.CharacterHealthStates.FindAsync("briv");
 
         // Assert
-        result.CharacterId.ShouldBe("briv");
-        result.Before.ShouldBe(new CombinedHitpoints(25, 10));
-        result.After.ShouldBe(new CombinedHitpoints(expectedHp, expectedTempHp));
-        result.TotalDamage.ShouldBe(expectedTotalDamage);
-        result.ResistanceEffect.ShouldBeNull();
+        result.ShouldNotBeNull();
+        var response = result.Value;
+        response.ShouldNotBeNull();
+        response.CharacterId.ShouldBe("briv");
+        response.Before.ShouldBe(new CombinedHitpoints(25, 10));
+        response.After.ShouldBe(new CombinedHitpoints(expectedHp, expectedTempHp));
+        response.TotalDamage.ShouldBe(expectedTotalDamage);
+        response.ResistanceEffect.ShouldBeNull();
         charStatus.ShouldNotBeNull();
         charStatus.Hitpoints.ShouldBe(expectedHp);
         charStatus.TemporaryHitpoints.ShouldBe(expectedTempHp);
@@ -146,14 +147,18 @@ public class HitpointServiceTest : IClassFixture<TestDatabaseFixture>
         // Act
         var result = await service.DamageCharacterAsync("briv", damage, DamageType.Slashing);
         dbContext.ChangeTracker.Clear();
-        var charStatus = await dbContext.CharacterHealthStates.FindAsync("briv");
 
         // Assert
-        result.CharacterId.ShouldBe("briv");
-        result.Before.ShouldBe(new CombinedHitpoints(25, 10));
-        result.After.ShouldBe(new CombinedHitpoints(expectedHp, expectedTempHp));
-        result.TotalDamage.ShouldBe(expectedTotalDamage);
-        result.ResistanceEffect.ShouldBe(DamageResistanceEffect.Resisted);
+        result.IsSuccess.ShouldBeTrue();
+        var response = result.Value;
+        response.ShouldNotBeNull();
+        response.CharacterId.ShouldBe("briv");
+        response.Before.ShouldBe(new CombinedHitpoints(25, 10));
+        response.After.ShouldBe(new CombinedHitpoints(expectedHp, expectedTempHp));
+        response.TotalDamage.ShouldBe(expectedTotalDamage);
+        response.ResistanceEffect.ShouldBe(DamageResistanceEffect.Resisted);
+
+        var charStatus = await dbContext.CharacterHealthStates.FindAsync("briv");
         charStatus.ShouldNotBeNull();
         charStatus.Hitpoints.ShouldBe(expectedHp);
         charStatus.TemporaryHitpoints.ShouldBe(expectedTempHp);
@@ -185,14 +190,18 @@ public class HitpointServiceTest : IClassFixture<TestDatabaseFixture>
         // Act
         var result = await service.DamageCharacterAsync("briv", damage, DamageType.Fire);
         dbContext.ChangeTracker.Clear();
-        var charStatus = await dbContext.CharacterHealthStates.FindAsync("briv");
 
         // Assert
-        result.CharacterId.ShouldBe("briv");
-        result.Before.ShouldBe(new CombinedHitpoints(25, 10));
-        result.After.ShouldBe(new CombinedHitpoints(25, 10));
-        result.TotalDamage.ShouldBe(0);
-        result.ResistanceEffect.ShouldBe(DamageResistanceEffect.Immune);
+        result.IsSuccess.ShouldBeTrue();
+        var response = result.Value;
+        response.ShouldNotBeNull();
+        response.CharacterId.ShouldBe("briv");
+        response.Before.ShouldBe(new CombinedHitpoints(25, 10));
+        response.After.ShouldBe(new CombinedHitpoints(25, 10));
+        response.TotalDamage.ShouldBe(0);
+        response.ResistanceEffect.ShouldBe(DamageResistanceEffect.Immune);
+
+        var charStatus = await dbContext.CharacterHealthStates.FindAsync("briv");
         charStatus.ShouldNotBeNull();
         charStatus.Hitpoints.ShouldBe(25);
         charStatus.TemporaryHitpoints.ShouldBe(10);
@@ -201,7 +210,7 @@ public class HitpointServiceTest : IClassFixture<TestDatabaseFixture>
     [Theory]
     [InlineData(-1)]
     [InlineData(int.MinValue)]
-    public async Task DamageCharacterAsync_WithNegativeDamage_ShouldThrowException(int damage)
+    public async Task DamageCharacterAsync_WithNegativeDamage_ShouldFail(int damage)
     {
         // Arrange
         await using var dbContext = Fixture.CreateContext();
@@ -212,13 +221,16 @@ public class HitpointServiceTest : IClassFixture<TestDatabaseFixture>
 
         var service = new HitpointService(characterService.Object, dbContext);
 
-        // Act & Assert
-        await Should.ThrowAsync<ArgumentOutOfRangeException>(async () =>
-            await service.DamageCharacterAsync("briv", damage, DamageType.Fire));
+        // Act
+        var result = await service.DamageCharacterAsync("briv", damage, DamageType.Fire);
+
+        // Assert
+        result.IsSuccess.ShouldBeFalse();
+        result.Error.ShouldBe("Damage must be a positive number.");
     }
 
     [Fact]
-    public async Task DamageCharacterAsync_WithUnknownCharacter_ShouldThrowException()
+    public async Task DamageCharacterAsync_WithUnknownCharacter_ShouldFail()
     {
         // Arrange
         await using var dbContext = Fixture.CreateContext();
@@ -229,8 +241,218 @@ public class HitpointServiceTest : IClassFixture<TestDatabaseFixture>
 
         var service = new HitpointService(characterService.Object, dbContext);
 
-        // Act & Assert
-        await Should.ThrowAsync<ArgumentException>(async () =>
-            await service.DamageCharacterAsync("briv", 10, DamageType.Cold));
+        // Act
+        var result = await service.DamageCharacterAsync("briv", 10, DamageType.Cold);
+
+        // Assert
+        result.IsSuccess.ShouldBeFalse();
+        result.Error.ShouldBe("Character not found.");
+    }
+    
+    [Theory]
+    [InlineData(0, 25, 25, 0)]
+    [InlineData(5, 25, 25, 0)]
+    [InlineData(10, 0, 10, 10)]
+    [InlineData(25, 0, 25, 25)]
+    [InlineData(30, 0, 25, 25)]
+    [InlineData(int.MaxValue, 0, 25, 25)]
+    [InlineData(int.MaxValue, 25, 25, 0)]
+    public async Task HealCharacterAsync(int healAmount, int initialHp, int expectedHp, int expectedHealAmount)
+    {
+        // Arrange
+        await using var dbContext = Fixture.CreateContext();
+        dbContext.CharacterHealthStates.Add(new CharacterHealthState()
+        {
+            CharacterId = "briv",
+            Hitpoints = initialHp,
+            TemporaryHitpoints = 0,
+            MaxHitpoints = 25
+        });
+        await dbContext.SaveChangesAsync();
+
+        var characterService = new Mock<ICharacterService>();
+        characterService.Setup(cs => cs.GetCharacterAsync("briv"))
+            .ReturnsAsync(Fixture.BasicCharacter);
+
+        var service = new HitpointService(characterService.Object, dbContext);
+
+        // Act
+        var result = await service.HealCharacterAsync("briv", healAmount);
+        dbContext.ChangeTracker.Clear();
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        var response = result.Value;
+        response.ShouldNotBeNull();
+        response.CharacterId.ShouldBe("briv");
+        response.Before.ShouldBe(new CombinedHitpoints(initialHp, 0));
+        response.After.ShouldBe(new CombinedHitpoints(expectedHp, 0));
+        response.ActualHealed.ShouldBe(expectedHealAmount);
+
+        var charStatus = await dbContext.CharacterHealthStates.FindAsync("briv");
+        charStatus.ShouldNotBeNull();
+        charStatus.Hitpoints.ShouldBe(expectedHp);
+        charStatus.TemporaryHitpoints.ShouldBe(0);
+    }
+
+
+    [Fact]
+    public async Task HealCharacterAsync_WithUnknownCharacter_ShouldReturnError()
+    {
+        // Arrange
+        await using var dbContext = Fixture.CreateContext();
+        await dbContext.SaveChangesAsync();
+
+        var characterService = new Mock<ICharacterService>();
+        characterService.Setup(cs => cs.GetCharacterAsync("briv"))
+            .ReturnsAsync((Character?)null);
+
+        var service = new HitpointService(characterService.Object, dbContext);
+
+        // Act
+        var result = await service.HealCharacterAsync("briv", 10);
+
+        // Assert
+        result.IsSuccess.ShouldBeFalse();
+        result.Error.ShouldBe("Failed to retrieve or create character health state.");
+    }
+
+
+    [Theory]
+    [InlineData(-1)]
+    [InlineData(int.MinValue)]
+    public async Task HealCharacterAsync_WithNegativeAmount_ShouldReturnError(int healAmount)
+    {
+        // Arrange
+        await using var dbContext = Fixture.CreateContext();
+        dbContext.CharacterHealthStates.Add(new CharacterHealthState()
+        {
+            CharacterId = "briv",
+            Hitpoints = 15,
+            TemporaryHitpoints = 0,
+            MaxHitpoints = 25
+        });
+        await dbContext.SaveChangesAsync();
+
+        var characterService = new Mock<ICharacterService>();
+        characterService.Setup(cs => cs.GetCharacterAsync("briv"))
+            .ReturnsAsync(Fixture.BasicCharacter);
+
+        var service = new HitpointService(characterService.Object, dbContext);
+
+        // Act
+        var result = await service.HealCharacterAsync("briv", healAmount);
+        dbContext.ChangeTracker.Clear();
+
+        // Assert
+        result.IsSuccess.ShouldBeFalse();
+        result.Error.ShouldBe("Healing amount must be a positive number.");
+
+        var charStatus = await dbContext.CharacterHealthStates.FindAsync("briv");
+        charStatus.ShouldNotBeNull();
+        charStatus.Hitpoints.ShouldBe(15);
+        charStatus.TemporaryHitpoints.ShouldBe(0);
+    }
+
+    [Theory]
+    [InlineData(0, 0, 0, 0)]
+    [InlineData(0, 10, 10, 10)]
+    [InlineData(5, 10, 10, 5)]
+    [InlineData(10, 5, 10, 0)]
+    [InlineData(10, 10, 10, 0)]
+    public async Task AddTemporaryHitpointsAsync(int initialTempHp, int addedTempHp, int expectedTempHp,
+        int expectedGained)
+    {
+        // Arrange
+        await using var dbContext = Fixture.CreateContext();
+        dbContext.CharacterHealthStates.Add(new CharacterHealthState()
+        {
+            CharacterId = "briv",
+            Hitpoints = 25,
+            TemporaryHitpoints = initialTempHp,
+            MaxHitpoints = 25
+        });
+        await dbContext.SaveChangesAsync();
+
+        var characterService = new Mock<ICharacterService>();
+        characterService.Setup(cs => cs.GetCharacterAsync("briv"))
+            .ReturnsAsync(Fixture.BasicCharacter);
+
+        var service = new HitpointService(characterService.Object, dbContext);
+
+        // Act
+        var result = await service.AddTemporaryHitpointsAsync("briv", addedTempHp);
+        dbContext.ChangeTracker.Clear();
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        var response = result.Value;
+        response.ShouldNotBeNull();
+        response.CharacterId.ShouldBe("briv");
+        response.Before.ShouldBe(new CombinedHitpoints(25, initialTempHp));
+        response.After.ShouldBe(new CombinedHitpoints(25, expectedTempHp));
+        response.Gained.ShouldBe(expectedGained);
+
+        var charStatus = await dbContext.CharacterHealthStates.FindAsync("briv");
+        charStatus.ShouldNotBeNull();
+        charStatus.Hitpoints.ShouldBe(25);
+        charStatus.TemporaryHitpoints.ShouldBe(expectedTempHp);
+    }
+    
+    [Fact]
+    public async Task AddTemporaryHitpointsAsync_WithUnknownCharacter_ShouldReturnError()
+    {
+        // Arrange
+        await using var dbContext = Fixture.CreateContext();
+        await dbContext.SaveChangesAsync();
+
+        var characterService = new Mock<ICharacterService>();
+        characterService.Setup(cs => cs.GetCharacterAsync("briv"))
+            .ReturnsAsync((Character?)null);
+
+        var service = new HitpointService(characterService.Object, dbContext);
+
+        // Act
+        var result = await service.AddTemporaryHitpointsAsync("briv", 10);
+
+        // Assert
+        result.IsSuccess.ShouldBeFalse();
+        result.Error.ShouldBe("Failed to retrieve or create character health state.");
+    }
+    
+    [Theory]
+    [InlineData(-1)]
+    [InlineData(int.MinValue)]
+    public async Task AddTemporaryHitpointsAsync_WithNegativeAmount_ShouldReturnError(int tempHp)
+    {
+        // Arrange
+        await using var dbContext = Fixture.CreateContext();
+        dbContext.CharacterHealthStates.Add(new CharacterHealthState()
+        {
+            CharacterId = "briv",
+            Hitpoints = 15,
+            TemporaryHitpoints = 0,
+            MaxHitpoints = 25
+        });
+        await dbContext.SaveChangesAsync();
+
+        var characterService = new Mock<ICharacterService>();
+        characterService.Setup(cs => cs.GetCharacterAsync("briv"))
+            .ReturnsAsync(Fixture.BasicCharacter);
+
+        var service = new HitpointService(characterService.Object, dbContext);
+
+        // Act
+        var result = await service.AddTemporaryHitpointsAsync("briv", tempHp);
+        dbContext.ChangeTracker.Clear();
+
+        // Assert
+        result.IsSuccess.ShouldBeFalse();
+        result.Error.ShouldBe("Temporary hitpoints must be a positive number.");
+
+        var charStatus = await dbContext.CharacterHealthStates.FindAsync("briv");
+        charStatus.ShouldNotBeNull();
+        charStatus.Hitpoints.ShouldBe(15);
+        charStatus.TemporaryHitpoints.ShouldBe(0);
     }
 }
