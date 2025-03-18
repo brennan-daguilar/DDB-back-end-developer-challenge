@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using System.Text.Json.Serialization;
 using CharacterHitpointService.Models;
 
 namespace CharacterHitpointService.CharacterService;
@@ -14,10 +15,13 @@ public class MockCharacterService : ICharacterService
 
     public async Task LoadMockDataAsync(string filePath)
     {
+        var options =
+            new JsonSerializerOptions(JsonSerializerDefaults.Web);
+        options.Converters.Add(new JsonStringEnumConverter());
         var json = await File.ReadAllTextAsync(filePath);
-        var character = JsonSerializer.Deserialize<Character>(json) ??
+        var character = JsonSerializer.Deserialize<Character>(json, options) ??
                         throw new NullReferenceException("Failed to deserialize character data.");
-        _characters.Add(character.Name, character);
+        _characters.Add("briv", character);
     }
 
     public Task<Character?> GetCharacterAsync(string characterId)
