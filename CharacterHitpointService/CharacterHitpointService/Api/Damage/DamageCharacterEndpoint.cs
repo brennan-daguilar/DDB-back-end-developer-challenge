@@ -1,4 +1,5 @@
-﻿using CharacterHitpointService.Models;
+﻿using CharacterHitpointService.Hitpoints;
+using CharacterHitpointService.Models;
 using CharacterHitpointService.Util;
 using FluentValidation;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -14,8 +15,10 @@ public class DamageCharacterEndpoint : IEndpoint
 
     private async Task<Results<
         Ok<DamageCharacterResponse>,
-        ValidationProblem
-    >> HandleAsync(DamageCharacterRequest request, IValidator<DamageCharacterRequest> validator)
+        ValidationProblem,
+        ProblemHttpResult
+    >> HandleAsync(DamageCharacterRequest request, IValidator<DamageCharacterRequest> validator,
+        HitpointService hitpointService)
     {
         var validationResult = await validator.ValidateAsync(request);
 
@@ -25,16 +28,11 @@ public class DamageCharacterEndpoint : IEndpoint
         }
 
         var damageType = Enum.Parse<DamageType>(request.Type, ignoreCase: true);
-        
-        // TODO: Damage character and generate response
+        var result = await hitpointService.DamageCharacterAsync(request.CharacterId, request.Damage, damageType);
 
-        return TypedResults.Ok(new DamageCharacterResponse()
-        {
-            CharacterId = request.CharacterId,
-            Before = new CombinedHitpoints(10,5),
-            After = new CombinedHitpoints(5,0),
-            TotalDamage = 10,
-            ResistanceEffect = DamageResistanceEffect.Resisted
-        });
+        if (!result.IsSuccess)
+            return TypedResults.Problem(detail: result.Error);
+
+        return TypedResults.Ok(result.Value);
     }
 }

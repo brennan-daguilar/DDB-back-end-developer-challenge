@@ -1,4 +1,5 @@
-﻿using CharacterHitpointService.Models;
+﻿using CharacterHitpointService.Hitpoints;
+using CharacterHitpointService.Models;
 using CharacterHitpointService.Util;
 using FluentValidation;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -9,15 +10,17 @@ public class HealCharacterEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
-        app.MapPost("character/{characterId}/heal",
+        app.MapPost("/heal",
             HandleAsync
         );
     }
 
     private async Task<Results<
         Ok<HealCharacterResponse>,
-        ValidationProblem
-    >> HandleAsync(HealCharacterRequest request, IValidator<HealCharacterRequest> validator)
+        ValidationProblem,
+        ProblemHttpResult
+    >> HandleAsync(HealCharacterRequest request, IValidator<HealCharacterRequest> validator,
+        HitpointService hitpointService)
     {
         var validationResult = await validator.ValidateAsync(request);
 
@@ -26,14 +29,11 @@ public class HealCharacterEndpoint : IEndpoint
             return TypedResults.ValidationProblem(validationResult.ToDictionary());
         }
 
-        // TODO: Heal character and generate response
+        var result = await hitpointService.HealCharacterAsync(request.CharacterId, request.Value);
 
-        return TypedResults.Ok(new HealCharacterResponse()
-        {
-            CharacterId = request.CharacterId,
-            Before = new CombinedHitpoints(10, 0),
-            After = new CombinedHitpoints(15, 0),
-            ActualHealed = 5
-        });
+        if (!result.IsSuccess)
+            return TypedResults.Problem(detail: result.Error);
+
+        return TypedResults.Ok(result.Value);
     }
 }

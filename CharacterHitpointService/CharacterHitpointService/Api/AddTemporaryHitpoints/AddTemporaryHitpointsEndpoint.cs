@@ -1,4 +1,5 @@
-﻿using CharacterHitpointService.Models;
+﻿using CharacterHitpointService.Hitpoints;
+using CharacterHitpointService.Models;
 using CharacterHitpointService.Util;
 using FluentValidation;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -9,14 +10,16 @@ public class AddTemporaryHitpointsEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
-        app.MapPost("character/{characterId}/damage",
+        app.MapPost("/addTemporaryHitpoints",
             HandleAsync);
     }
 
     private async Task<Results<
         Ok<AddTemporaryHitpointsResponse>,
-        ValidationProblem
-    >> HandleAsync(AddTemporaryHitpointsRequest request, IValidator<AddTemporaryHitpointsRequest> validator)
+        ValidationProblem,
+        ProblemHttpResult
+    >> HandleAsync(AddTemporaryHitpointsRequest request, IValidator<AddTemporaryHitpointsRequest> validator,
+        HitpointService hitpointService)
     {
         var validationResult = await validator.ValidateAsync(request);
 
@@ -25,14 +28,11 @@ public class AddTemporaryHitpointsEndpoint : IEndpoint
             return TypedResults.ValidationProblem(validationResult.ToDictionary());
         }
 
-        // TODO: Add temporary hitpoints and generate result
+        var result = await hitpointService.AddTemporaryHitpointsAsync(request.CharacterId, request.Value);
 
-        return TypedResults.Ok(new AddTemporaryHitpointsResponse()
-        {
-            CharacterId = request.CharacterId,
-            Before = new CombinedHitpoints(10, 5),
-            After = new CombinedHitpoints(10, 10),
-            Gained = 5
-        });
+        if (!result.IsSuccess)
+            return TypedResults.Problem(detail: result.Error);
+
+        return TypedResults.Ok(result.Value);
     }
 }
