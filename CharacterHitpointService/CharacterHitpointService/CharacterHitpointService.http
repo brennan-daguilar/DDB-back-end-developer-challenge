@@ -1,13 +1,33 @@
 @CharacterHitpointService_HostAddress = http://localhost:5102
 
-POST {{HitpointService_HostAddress}}/damage/
+POST {{CharacterHitpointService_HostAddress}}/damage/
 Accept: application/json
 Content-Type: application/json
 
 {
   "characterId": "briv",
-  "damage": 10,
-  "type": "acid"
+  "damage": 9,
+  "type": "slashing"
 }
 
 ###
+
+POST {{CharacterHitpointService_HostAddress}}/heal/
+Accept: application/json
+Content-Type: application/json
+
+{
+  "characterId": "briv",
+  "value": 10
+}
+
+###
+
+POST {{CharacterHitpointService_HostAddress}}/addTemporaryHitpoints/
+Accept: application/json
+Content-Type: application/json
+
+{
+  "characterId": "briv",
+  "value": 12
+}
