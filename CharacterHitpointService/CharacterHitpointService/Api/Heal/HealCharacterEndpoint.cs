@@ -10,7 +10,7 @@ public class HealCharacterEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
-        app.MapPost("/heal",
+        app.MapPost("/character/{characterId}/heal",
             HandleAsync
         );
     }
@@ -19,9 +19,10 @@ public class HealCharacterEndpoint : IEndpoint
         Ok<HealCharacterResponse>,
         ValidationProblem,
         ProblemHttpResult
-    >> HandleAsync(HealCharacterRequest request, IValidator<HealCharacterRequest> validator,
+    >> HandleAsync(string characterId, HealCharacterRequest request, IValidator<HealCharacterRequest> validator,
         HitpointService hitpointService)
     {
+        request.CharacterId = characterId;
         var validationResult = await validator.ValidateAsync(request);
 
         if (!validationResult.IsValid)
@@ -29,7 +30,7 @@ public class HealCharacterEndpoint : IEndpoint
             return TypedResults.ValidationProblem(validationResult.ToDictionary());
         }
 
-        var result = await hitpointService.HealCharacterAsync(request.CharacterId, request.Value);
+        var result = await hitpointService.HealCharacterAsync(request.CharacterId, request.Amount);
 
         if (!result.IsSuccess)
             return TypedResults.Problem(detail: result.Error);

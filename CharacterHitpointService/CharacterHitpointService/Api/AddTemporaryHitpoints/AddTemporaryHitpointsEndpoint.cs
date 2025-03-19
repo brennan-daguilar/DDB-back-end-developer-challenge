@@ -10,7 +10,7 @@ public class AddTemporaryHitpointsEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
-        app.MapPost("/addTemporaryHitpoints",
+        app.MapPost("/character/{characterId}/addTemporaryHitpoints",
             HandleAsync);
     }
 
@@ -18,9 +18,10 @@ public class AddTemporaryHitpointsEndpoint : IEndpoint
         Ok<AddTemporaryHitpointsResponse>,
         ValidationProblem,
         ProblemHttpResult
-    >> HandleAsync(AddTemporaryHitpointsRequest request, IValidator<AddTemporaryHitpointsRequest> validator,
+    >> HandleAsync(string characterId, AddTemporaryHitpointsRequest request, IValidator<AddTemporaryHitpointsRequest> validator,
         HitpointService hitpointService)
     {
+        request.CharacterId = characterId;
         var validationResult = await validator.ValidateAsync(request);
 
         if (!validationResult.IsValid)
@@ -28,7 +29,7 @@ public class AddTemporaryHitpointsEndpoint : IEndpoint
             return TypedResults.ValidationProblem(validationResult.ToDictionary());
         }
 
-        var result = await hitpointService.AddTemporaryHitpointsAsync(request.CharacterId, request.Value);
+        var result = await hitpointService.AddTemporaryHitpointsAsync(request.CharacterId, request.Amount);
 
         if (!result.IsSuccess)
             return TypedResults.Problem(detail: result.Error);

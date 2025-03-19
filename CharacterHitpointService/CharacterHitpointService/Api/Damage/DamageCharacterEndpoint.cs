@@ -10,16 +10,17 @@ public class DamageCharacterEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
-        app.MapPost("/damage", HandleAsync);
+        app.MapPost("/character/{characterId}/damage", HandleAsync);
     }
 
     private async Task<Results<
         Ok<DamageCharacterResponse>,
         ValidationProblem,
         ProblemHttpResult
-    >> HandleAsync(DamageCharacterRequest request, IValidator<DamageCharacterRequest> validator,
+    >> HandleAsync(string characterId, DamageCharacterRequest request, IValidator<DamageCharacterRequest> validator,
         HitpointService hitpointService)
     {
+        request.CharacterId = characterId;
         var validationResult = await validator.ValidateAsync(request);
 
         if (!validationResult.IsValid)
@@ -28,7 +29,7 @@ public class DamageCharacterEndpoint : IEndpoint
         }
 
         var damageType = Enum.Parse<DamageType>(request.Type, ignoreCase: true);
-        var result = await hitpointService.DamageCharacterAsync(request.CharacterId, request.Damage, damageType);
+        var result = await hitpointService.DamageCharacterAsync(request.CharacterId, request.Amount, damageType);
 
         if (!result.IsSuccess)
             return TypedResults.Problem(detail: result.Error);
