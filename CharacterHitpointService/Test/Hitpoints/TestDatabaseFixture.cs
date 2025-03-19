@@ -1,4 +1,5 @@
-﻿using CharacterHitpointService.Hitpoints;
+﻿using CharacterHitpointService.Characters;
+using CharacterHitpointService.Hitpoints;
 using CharacterHitpointService.Infrastructure;
 using CharacterHitpointService.Shared.Models;
 using Microsoft.EntityFrameworkCore;
@@ -41,42 +42,9 @@ public class TestDatabaseFixture
         return context;
     }
 
-    public Character BasicCharacter => new Character()
+    public LimitedCharacter BasicCharacter => new LimitedCharacter()
     {
-        Name = "Briv",
-        Level = 5,
         Hitpoints = 25,
-        Classes = new HashSet<CharacterClass>
-        {
-            new CharacterClass()
-            {
-                Name = "fighter",
-                HitDiceValue = 10,
-                ClassLevel = 5
-            }
-        },
-        Stats = new Stats()
-        {
-            Strength = 18,
-            Dexterity = 14,
-            Constitution = 16,
-            Intelligence = 10,
-            Wisdom = 12,
-            Charisma = 8
-        },
-        Items = new HashSet<Item>
-        {
-            new Item()
-            {
-                Name = "Ioun Stone of Fortitude",
-                Modifier = new ItemModifier()
-                {
-                    AffectedObject = "stats",
-                    AffectedValue = "constitution",
-                    Value = 2
-                }
-            }
-        },
         Defenses = new HashSet<CharacterDefense>()
         {
             new CharacterDefense()

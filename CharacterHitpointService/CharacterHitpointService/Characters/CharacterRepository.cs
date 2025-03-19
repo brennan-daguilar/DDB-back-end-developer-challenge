@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 using CharacterHitpointService.Characters.External;
+using CharacterHitpointService.Hitpoints.Models;
 using CharacterHitpointService.Shared.Models;
 using Microsoft.Extensions.Caching.Distributed;
 
@@ -20,7 +21,7 @@ public class CharacterRepository : ICharacterRepository
     }
 
 
-    public async Task<Character?> GetCharacterAsync(string characterId)
+    public async Task<LimitedCharacter?> GetCharacterAsync(string characterId)
     {
         var cacheKey = $"character:{characterId}";
         var cachedCharacter = await _cache.GetStringAsync(cacheKey);
@@ -28,7 +29,7 @@ public class CharacterRepository : ICharacterRepository
         {
             try
             {
-                return JsonSerializer.Deserialize<Character>(cachedCharacter);
+                return JsonSerializer.Deserialize<LimitedCharacter>(cachedCharacter);
             }
             catch (JsonException)
             {
@@ -36,17 +37,22 @@ public class CharacterRepository : ICharacterRepository
             }
         }
 
-        _logger.LogWarning("Cache miss for character {CharacterId}", characterId);
         var character = await _characterService.GetCharacterAsync(characterId);
-        if (character != null)
+        if (character == null) 
+            return null;
+        
+        var limitedCharacter = new LimitedCharacter()
         {
-            await _cache.SetStringAsync(cacheKey, JsonSerializer.Serialize(character),
-                new DistributedCacheEntryOptions()
-                {
-                    SlidingExpiration = TimeSpan.FromMinutes(5)
-                });
-        }
+            Hitpoints = character.Hitpoints,
+            Defenses = character.Defenses
+        };
+        await _cache.SetStringAsync(cacheKey, JsonSerializer.Serialize(limitedCharacter),
+            new DistributedCacheEntryOptions()
+            {
+                SlidingExpiration = TimeSpan.FromMinutes(5)
+            });
 
-        return character;
+        return limitedCharacter;
+
     }
 }

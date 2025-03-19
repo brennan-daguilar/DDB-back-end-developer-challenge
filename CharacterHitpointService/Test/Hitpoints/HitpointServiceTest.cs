@@ -51,7 +51,7 @@ public class HitpointServiceTest : IClassFixture<TestDatabaseFixture>
 
         var characterService = new Mock<ICharacterRepository>();
         characterService.Setup(cs => cs.GetCharacterAsync("briv"))
-            .ReturnsAsync((Character?)null);
+            .ReturnsAsync((LimitedCharacter?)null);
 
         var service = new HitpointService(characterService.Object, dbContext);
 
@@ -235,7 +235,7 @@ public class HitpointServiceTest : IClassFixture<TestDatabaseFixture>
 
         var characterService = new Mock<ICharacterRepository>();
         characterService.Setup(cs => cs.GetCharacterAsync(It.IsAny<string>()))
-            .ReturnsAsync((Character?)null);
+            .ReturnsAsync((LimitedCharacter?)null);
 
         var service = new HitpointService(characterService.Object, dbContext);
 
@@ -302,7 +302,7 @@ public class HitpointServiceTest : IClassFixture<TestDatabaseFixture>
 
         var characterService = new Mock<ICharacterRepository>();
         characterService.Setup(cs => cs.GetCharacterAsync("briv"))
-            .ReturnsAsync((Character?)null);
+            .ReturnsAsync((LimitedCharacter?)null);
 
         var service = new HitpointService(characterService.Object, dbContext);
 
@@ -403,7 +403,7 @@ public class HitpointServiceTest : IClassFixture<TestDatabaseFixture>
 
         var characterService = new Mock<ICharacterRepository>();
         characterService.Setup(cs => cs.GetCharacterAsync("briv"))
-            .ReturnsAsync((Character?)null);
+            .ReturnsAsync((LimitedCharacter?)null);
 
         var service = new HitpointService(characterService.Object, dbContext);
 
