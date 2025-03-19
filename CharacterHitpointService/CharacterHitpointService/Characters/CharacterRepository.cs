@@ -6,6 +6,9 @@ using Microsoft.Extensions.Caching.Distributed;
 
 namespace CharacterHitpointService.Characters;
 
+/// <summary>
+/// Retrieves and caches character data.
+/// </summary>
 public class CharacterRepository : ICharacterRepository
 {
     private readonly ICharacterService _characterService;
@@ -19,7 +22,6 @@ public class CharacterRepository : ICharacterRepository
         _cache = cache;
         _logger = logger;
     }
-
 
     public async Task<LimitedCharacter?> GetCharacterAsync(string characterId)
     {

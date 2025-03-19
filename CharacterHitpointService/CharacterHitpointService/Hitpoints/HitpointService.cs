@@ -1,7 +1,4 @@
-﻿using CharacterHitpointService.Api.AddTemporaryHitpoints;
-using CharacterHitpointService.Api.Damage;
-using CharacterHitpointService.Api.Heal;
-using CharacterHitpointService.Characters;
+﻿using CharacterHitpointService.Characters;
 using CharacterHitpointService.Hitpoints.Models;
 using CharacterHitpointService.Infrastructure;
 using CharacterHitpointService.Shared.Models;
@@ -151,13 +148,14 @@ public class HitpointService
         var character = await _characterRepository.GetCharacterAsync(characterId);
         if (character is null)
             return Result<HealCharacterResult>.Failure("Character not found.");
-        
+
         var health = await GetOrCreateCharacterHealthStateAsync(characterId);
         if (health is null)
             return Result<HealCharacterResult>.Failure("Failed to retrieve or create character health state.");
 
         var before = new CombinedHitpoints(health.Hitpoints, health.TemporaryHitpoints);
 
+        // Apply healing up to max hitpoints
         var actualHealAmount = Math.Min(amount, character.Hitpoints - health.Hitpoints);
         health.Hitpoints += actualHealAmount;
         await _dbContext.SaveChangesAsync();
@@ -191,6 +189,7 @@ public class HitpointService
 
         var before = new CombinedHitpoints(health.Hitpoints, health.TemporaryHitpoints);
 
+        // Set temporary hitpoints to the greater of the current temporary hitpoints or the given amount
         health.TemporaryHitpoints = Math.Max(amount, health.TemporaryHitpoints);
         await _dbContext.SaveChangesAsync();
 
