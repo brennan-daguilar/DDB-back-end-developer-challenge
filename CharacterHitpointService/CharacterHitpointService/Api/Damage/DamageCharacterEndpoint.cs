@@ -1,4 +1,5 @@
-﻿using CharacterHitpointService.Hitpoints;
+﻿using System.Net;
+using CharacterHitpointService.Hitpoints;
 using CharacterHitpointService.Hitpoints.Models;
 using CharacterHitpointService.Shared.Models;
 using CharacterHitpointService.Util;
@@ -35,7 +36,7 @@ public class DamageCharacterEndpoint : IEndpoint
         var result = await hitpointService.DamageCharacterAsync(request.CharacterId, request.Amount, damageType);
 
         if (!result.IsSuccess)
-            return TypedResults.Problem(detail: result.Error);
+            return TypedResults.Problem(detail: result.Error, statusCode: (int)HttpStatusCode.BadRequest);
 
         return TypedResults.Ok(result.Value);
     }

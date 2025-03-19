@@ -62,3 +62,5 @@ app.MapApiEndpoints();
 app.UseExceptionHandler();
 
 app.Run();
+
+public partial class Program;

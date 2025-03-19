@@ -1,4 +1,5 @@
-﻿using CharacterHitpointService.Hitpoints;
+﻿using System.Net;
+using CharacterHitpointService.Hitpoints;
 using CharacterHitpointService.Hitpoints.Models;
 using CharacterHitpointService.Util;
 using FluentValidation;
@@ -34,7 +35,7 @@ public class AddTemporaryHitpointsEndpoint : IEndpoint
         var result = await hitpointService.AddTemporaryHitpointsAsync(request.CharacterId, request.Amount);
 
         if (!result.IsSuccess)
-            return TypedResults.Problem(detail: result.Error);
+            return TypedResults.Problem(detail: result.Error, statusCode: (int)HttpStatusCode.BadRequest);
 
         return TypedResults.Ok(result.Value);
     }
