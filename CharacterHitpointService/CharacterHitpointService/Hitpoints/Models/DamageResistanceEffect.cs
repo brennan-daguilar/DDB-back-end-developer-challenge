@@ -1,4 +1,4 @@
-﻿namespace CharacterHitpointService.Models;
+﻿namespace CharacterHitpointService.Hitpoints.Models;
 
 public enum DamageResistanceEffect
 {

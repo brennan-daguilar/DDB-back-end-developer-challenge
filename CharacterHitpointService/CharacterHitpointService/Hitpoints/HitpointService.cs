@@ -1,8 +1,10 @@
 ﻿using CharacterHitpointService.Api.AddTemporaryHitpoints;
 using CharacterHitpointService.Api.Damage;
 using CharacterHitpointService.Api.Heal;
-using CharacterHitpointService.CharacterService;
-using CharacterHitpointService.Models;
+using CharacterHitpointService.Characters;
+using CharacterHitpointService.Hitpoints.Models;
+using CharacterHitpointService.Infrastructure;
+using CharacterHitpointService.Shared.Models;
 using CharacterHitpointService.Util;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,12 +12,12 @@ namespace CharacterHitpointService.Hitpoints;
 
 public class HitpointService
 {
-    private readonly ICharacterService _characterService;
+    private readonly ICharacterRepository _characterRepository;
     private readonly HitpointsDbContext _dbContext;
 
-    public HitpointService(ICharacterService characterService, HitpointsDbContext dbContext)
+    public HitpointService(ICharacterRepository characterRepository, HitpointsDbContext dbContext)
     {
-        _characterService = characterService;
+        _characterRepository = characterRepository;
         _dbContext = dbContext;
     }
 
@@ -24,7 +26,7 @@ public class HitpointService
     /// </summary>
     /// <param name="characterId">The character's id</param>
     /// <returns>The character's health state unless an error occurs</returns>
-    public async Task<CharacterHealthState?> GetOrCreateCharacterHealthStateAsync(string characterId)
+    public async Task<CharacterHitpointState?> GetOrCreateCharacterHealthStateAsync(string characterId)
     {
         var healthState = await _dbContext.CharacterHealthStates
             .FirstOrDefaultAsync(s => s.CharacterId == characterId);
@@ -41,19 +43,17 @@ public class HitpointService
     /// </summary>
     /// <param name="characterId">The character's id</param>
     /// <returns>The newly initialized health state or null if the character details can't be loaded</returns>
-    public async Task<CharacterHealthState?> InitializeCharacterHealthStateAsync(string characterId)
+    public async Task<CharacterHitpointState?> InitializeCharacterHealthStateAsync(string characterId)
     {
-        var character = await _characterService.GetCharacterAsync(characterId);
+        var character = await _characterRepository.GetCharacterAsync(characterId);
         if (character is null)
             return null;
 
-
-        var healthState = new CharacterHealthState
+        var healthState = new CharacterHitpointState
         {
             CharacterId = characterId,
             Hitpoints = character.Hitpoints,
             TemporaryHitpoints = 0,
-            MaxHitpoints = character.Hitpoints
         };
 
         _dbContext.CharacterHealthStates.Add(healthState);
@@ -73,19 +73,19 @@ public class HitpointService
     /// <param name="damage">The amount of damage the attack should do before resistance</param>
     /// <param name="damageType">The damage type of the attack</param>
     /// <returns>A Result object with a DamageCharacterResponse when successful, otherwise an error</returns>
-    public async Task<Result<DamageCharacterResponse>> DamageCharacterAsync(string characterId, int damage,
+    public async Task<Result<DamageCharacterResult>> DamageCharacterAsync(string characterId, int damage,
         DamageType damageType)
     {
         if (damage < 0)
-            return Result<DamageCharacterResponse>.Failure("Damage must be a positive number.");
+            return Result<DamageCharacterResult>.Failure("Damage must be a positive number.");
 
-        var character = await _characterService.GetCharacterAsync(characterId);
+        var character = await _characterRepository.GetCharacterAsync(characterId);
         if (character is null)
-            return Result<DamageCharacterResponse>.Failure("Character not found.");
+            return Result<DamageCharacterResult>.Failure("Character not found.");
 
         var health = await GetOrCreateCharacterHealthStateAsync(characterId);
         if (health is null)
-            return Result<DamageCharacterResponse>.Failure("Failed to retrieve or create character health state.");
+            return Result<DamageCharacterResult>.Failure("Failed to retrieve or create character health state.");
 
         var before = new CombinedHitpoints(health.Hitpoints, health.TemporaryHitpoints);
 
@@ -126,7 +126,7 @@ public class HitpointService
 
         await _dbContext.SaveChangesAsync();
 
-        return Result<DamageCharacterResponse>.Success(new DamageCharacterResponse()
+        return Result<DamageCharacterResult>.Success(new DamageCharacterResult()
         {
             CharacterId = characterId,
             Before = before,
@@ -143,22 +143,26 @@ public class HitpointService
     /// <param name="characterId">The character's id</param>
     /// <param name="amount">The amount of hitpoints to heal</param>
     /// <returns>A Result object with a HealCharacterResponse when successful, otherwise an error</returns>
-    public async Task<Result<HealCharacterResponse>> HealCharacterAsync(string characterId, int amount)
+    public async Task<Result<HealCharacterResult>> HealCharacterAsync(string characterId, int amount)
     {
         if (amount < 0)
-            return Result<HealCharacterResponse>.Failure("Healing amount must be a positive number.");
+            return Result<HealCharacterResult>.Failure("Healing amount must be a positive number.");
 
+        var character = await _characterRepository.GetCharacterAsync(characterId);
+        if (character is null)
+            return Result<HealCharacterResult>.Failure("Character not found.");
+        
         var health = await GetOrCreateCharacterHealthStateAsync(characterId);
         if (health is null)
-            return Result<HealCharacterResponse>.Failure("Failed to retrieve or create character health state.");
+            return Result<HealCharacterResult>.Failure("Failed to retrieve or create character health state.");
 
         var before = new CombinedHitpoints(health.Hitpoints, health.TemporaryHitpoints);
 
-        var actualHealAmount = Math.Min(amount, health.MaxHitpoints - health.Hitpoints);
+        var actualHealAmount = Math.Min(amount, character.Hitpoints - health.Hitpoints);
         health.Hitpoints += actualHealAmount;
         await _dbContext.SaveChangesAsync();
 
-        return Result<HealCharacterResponse>.Success(new HealCharacterResponse()
+        return Result<HealCharacterResult>.Success(new HealCharacterResult()
         {
             CharacterId = characterId,
             Before = before,
@@ -175,14 +179,14 @@ public class HitpointService
     /// <param name="characterId">The character's id</param>
     /// <param name="amount">The number of temporary hitpoints to add to the character</param>
     /// <returns>A Result object with a AddTemporaryHitpointsResponse when successful, otherwise an error</returns>
-    public async Task<Result<AddTemporaryHitpointsResponse>> AddTemporaryHitpointsAsync(string characterId, int amount)
+    public async Task<Result<AddTemporaryHitpointsResult>> AddTemporaryHitpointsAsync(string characterId, int amount)
     {
         if (amount < 0)
-            return Result<AddTemporaryHitpointsResponse>.Failure("Temporary hitpoints must be a positive number.");
+            return Result<AddTemporaryHitpointsResult>.Failure("Temporary hitpoints must be a positive number.");
 
         var health = await GetOrCreateCharacterHealthStateAsync(characterId);
         if (health is null)
-            return Result<AddTemporaryHitpointsResponse>.Failure(
+            return Result<AddTemporaryHitpointsResult>.Failure(
                 "Failed to retrieve or create character health state.");
 
         var before = new CombinedHitpoints(health.Hitpoints, health.TemporaryHitpoints);
@@ -190,7 +194,7 @@ public class HitpointService
         health.TemporaryHitpoints = Math.Max(amount, health.TemporaryHitpoints);
         await _dbContext.SaveChangesAsync();
 
-        return Result<AddTemporaryHitpointsResponse>.Success(new AddTemporaryHitpointsResponse()
+        return Result<AddTemporaryHitpointsResult>.Success(new AddTemporaryHitpointsResult()
         {
             CharacterId = characterId,
             Before = before,

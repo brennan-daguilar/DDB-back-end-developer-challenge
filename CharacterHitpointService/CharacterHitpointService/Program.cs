@@ -1,9 +1,12 @@
 using System.Text.Json.Serialization;
 using CharacterHitpointService.Api;
-using CharacterHitpointService.CharacterService;
+using CharacterHitpointService.Characters;
+using CharacterHitpointService.Characters.External;
 using CharacterHitpointService.Hitpoints;
+using CharacterHitpointService.Infrastructure;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,6 +24,8 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 
 builder.Services.AddDbContext<HitpointsDbContext>(options => options.UseSqlite("Data Source=hitpoints.db"));
 builder.Services.AddSingleton<ICharacterService, MockCharacterService>();
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddScoped<ICharacterRepository, CharacterRepository>();
 builder.Services.AddScoped<HitpointService>();
 
 var app = builder.Build();

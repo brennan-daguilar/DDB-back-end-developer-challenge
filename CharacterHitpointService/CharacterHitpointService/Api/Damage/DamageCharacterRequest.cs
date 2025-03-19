@@ -1,5 +1,5 @@
 ﻿using System.Text.Json.Serialization;
-using CharacterHitpointService.Models;
+using CharacterHitpointService.Shared.Models;
 using FluentValidation;
 
 namespace CharacterHitpointService.Api.Damage;

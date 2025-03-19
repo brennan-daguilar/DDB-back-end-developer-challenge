@@ -1,8 +1,6 @@
-﻿using CharacterHitpointService.Models;
+﻿namespace CharacterHitpointService.Hitpoints.Models;
 
-namespace CharacterHitpointService.Api.Damage;
-
-public class DamageCharacterResponse
+public class DamageCharacterResult
 {
     public required string CharacterId { get; set; }
     public required CombinedHitpoints Before { get; set; }

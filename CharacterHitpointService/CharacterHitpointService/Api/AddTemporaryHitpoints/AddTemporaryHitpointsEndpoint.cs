@@ -1,5 +1,5 @@
 ﻿using CharacterHitpointService.Hitpoints;
-using CharacterHitpointService.Models;
+using CharacterHitpointService.Hitpoints.Models;
 using CharacterHitpointService.Util;
 using FluentValidation;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -15,7 +15,7 @@ public class AddTemporaryHitpointsEndpoint : IEndpoint
     }
 
     private async Task<Results<
-        Ok<AddTemporaryHitpointsResponse>,
+        Ok<AddTemporaryHitpointsResult>,
         ValidationProblem,
         ProblemHttpResult
     >> HandleAsync(string characterId, AddTemporaryHitpointsRequest request, IValidator<AddTemporaryHitpointsRequest> validator,

@@ -1,11 +1,9 @@
-﻿using CharacterHitpointService.Models;
+﻿namespace CharacterHitpointService.Hitpoints.Models;
 
-namespace CharacterHitpointService.Api.Heal;
-
-public class HealCharacterResponse
+public class AddTemporaryHitpointsResult
 {
     public required string CharacterId { get; set; }
     public required CombinedHitpoints Before { get; set; }
     public required CombinedHitpoints After { get; set; }
-    public required int ActualHealed { get; set; }
+    public required int Gained { get; set; }
 }

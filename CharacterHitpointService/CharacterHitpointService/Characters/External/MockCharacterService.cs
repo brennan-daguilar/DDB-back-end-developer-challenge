@@ -1,8 +1,8 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
-using CharacterHitpointService.Models;
+using CharacterHitpointService.Shared.Models;
 
-namespace CharacterHitpointService.CharacterService;
+namespace CharacterHitpointService.Characters.External;
 
 public class MockCharacterService : ICharacterService
 {
@@ -24,13 +24,16 @@ public class MockCharacterService : ICharacterService
         _characters.Add("briv", character);
     }
 
-    public Task<Character?> GetCharacterAsync(string characterId)
+    public async Task<Character?> GetCharacterAsync(string characterId)
     {
+        // Simulate latency from an external service
+        await Task.Delay(500);
+
         if (_characters.TryGetValue(characterId, out var character))
         {
-            return Task.FromResult<Character?>(character);
+            return character;
         }
 
-        return Task.FromResult<Character?>(null)!;
+        return null;
     }
 }

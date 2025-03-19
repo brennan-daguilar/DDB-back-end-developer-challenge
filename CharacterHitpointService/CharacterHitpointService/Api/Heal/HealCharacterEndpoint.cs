@@ -1,5 +1,5 @@
 ﻿using CharacterHitpointService.Hitpoints;
-using CharacterHitpointService.Models;
+using CharacterHitpointService.Hitpoints.Models;
 using CharacterHitpointService.Util;
 using FluentValidation;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -16,7 +16,7 @@ public class HealCharacterEndpoint : IEndpoint
     }
 
     private async Task<Results<
-        Ok<HealCharacterResponse>,
+        Ok<HealCharacterResult>,
         ValidationProblem,
         ProblemHttpResult
     >> HandleAsync(string characterId, HealCharacterRequest request, IValidator<HealCharacterRequest> validator,

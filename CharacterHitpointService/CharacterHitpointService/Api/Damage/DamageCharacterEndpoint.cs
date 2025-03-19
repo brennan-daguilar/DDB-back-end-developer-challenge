@@ -1,5 +1,6 @@
 ﻿using CharacterHitpointService.Hitpoints;
-using CharacterHitpointService.Models;
+using CharacterHitpointService.Hitpoints.Models;
+using CharacterHitpointService.Shared.Models;
 using CharacterHitpointService.Util;
 using FluentValidation;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -14,7 +15,7 @@ public class DamageCharacterEndpoint : IEndpoint
     }
 
     private async Task<Results<
-        Ok<DamageCharacterResponse>,
+        Ok<DamageCharacterResult>,
         ValidationProblem,
         ProblemHttpResult
     >> HandleAsync(string characterId, DamageCharacterRequest request, IValidator<DamageCharacterRequest> validator,

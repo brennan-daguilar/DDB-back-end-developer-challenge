@@ -1,4 +1,4 @@
-﻿namespace CharacterHitpointService.Models;
+﻿namespace CharacterHitpointService.Shared.Models;
 
 public enum DamageType
 {
