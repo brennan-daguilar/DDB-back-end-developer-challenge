@@ -1,27 +1,15 @@
-﻿using System.Text.Json;
-using System.Text.Json.Serialization;
-using CharacterHitpointService.Shared.Models;
+﻿using CharacterHitpointService.Shared.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace CharacterHitpointService.Characters.External;
 
 public class MockCharacterService : ICharacterService
 {
-    private readonly Dictionary<string, Character> _characters = new();
+    public readonly CharacterDbContext _dbContext;
 
-    public MockCharacterService()
+    public MockCharacterService(CharacterDbContext dbContext)
     {
-        LoadMockDataAsync("briv.json").Wait();
-    }
-
-    public async Task LoadMockDataAsync(string filePath)
-    {
-        var options =
-            new JsonSerializerOptions(JsonSerializerDefaults.Web);
-        options.Converters.Add(new JsonStringEnumConverter());
-        var json = await File.ReadAllTextAsync(filePath);
-        var character = JsonSerializer.Deserialize<Character>(json, options) ??
-                        throw new NullReferenceException("Failed to deserialize character data.");
-        _characters.Add("briv", character);
+        _dbContext = dbContext;
     }
 
     public async Task<Character?> GetCharacterAsync(string characterId)
@@ -29,11 +17,11 @@ public class MockCharacterService : ICharacterService
         // Simulate latency from an external service
         await Task.Delay(500);
 
-        if (_characters.TryGetValue(characterId, out var character))
-        {
-            return character;
-        }
-
-        return null;
+        return await _dbContext.Characters
+            .Include(c => c.Classes)
+            .Include(c => c.Stats)
+            .Include(c => c.Items)
+            .Include(c => c.Defenses)
+            .FirstOrDefaultAsync(c => c.Id == characterId);
     }
 }

@@ -5,7 +5,7 @@ namespace CharacterHitpointService.Infrastructure;
 
 public class HitpointsDbContext : DbContext
 {
-    public HitpointsDbContext(DbContextOptions options) : base(options)
+    public HitpointsDbContext(DbContextOptions<HitpointsDbContext> options) : base(options)
     {
     }
 
