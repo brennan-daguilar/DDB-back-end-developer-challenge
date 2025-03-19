@@ -1,6 +1,7 @@
-﻿using CharacterHitpointService.CharacterService;
+﻿using CharacterHitpointService.Characters;
 using CharacterHitpointService.Hitpoints;
-using CharacterHitpointService.Models;
+using CharacterHitpointService.Hitpoints.Models;
+using CharacterHitpointService.Shared.Models;
 using Moq;
 using Shouldly;
 
@@ -23,7 +24,7 @@ public class HitpointServiceTest : IClassFixture<TestDatabaseFixture>
         // Arrange
         await using var dbContext = Fixture.CreateContext();
 
-        var characterService = new Mock<ICharacterService>();
+        var characterService = new Mock<ICharacterRepository>();
         characterService.Setup(cs => cs.GetCharacterAsync("briv"))
             .ReturnsAsync(Fixture.BasicCharacter);
 
@@ -48,7 +49,7 @@ public class HitpointServiceTest : IClassFixture<TestDatabaseFixture>
         // Arrange
         await using var dbContext = Fixture.CreateContext();
 
-        var characterService = new Mock<ICharacterService>();
+        var characterService = new Mock<ICharacterRepository>();
         characterService.Setup(cs => cs.GetCharacterAsync("briv"))
             .ReturnsAsync((Character?)null);
 
@@ -80,16 +81,15 @@ public class HitpointServiceTest : IClassFixture<TestDatabaseFixture>
     {
         // Arrange
         await using var dbContext = Fixture.CreateContext();
-        dbContext.CharacterHealthStates.Add(new CharacterHealthState()
+        dbContext.CharacterHealthStates.Add(new CharacterHitpointState()
         {
             CharacterId = "briv",
             Hitpoints = 25,
             TemporaryHitpoints = 10,
-            MaxHitpoints = 25
         });
         await dbContext.SaveChangesAsync();
 
-        var characterService = new Mock<ICharacterService>();
+        var characterService = new Mock<ICharacterRepository>();
         characterService.Setup(cs => cs.GetCharacterAsync("briv"))
             .ReturnsAsync(Fixture.BasicCharacter);
 
@@ -129,16 +129,15 @@ public class HitpointServiceTest : IClassFixture<TestDatabaseFixture>
     {
         // Arrange
         await using var dbContext = Fixture.CreateContext();
-        dbContext.CharacterHealthStates.Add(new CharacterHealthState()
+        dbContext.CharacterHealthStates.Add(new CharacterHitpointState()
         {
             CharacterId = "briv",
             Hitpoints = 25,
             TemporaryHitpoints = 10,
-            MaxHitpoints = 25
         });
         await dbContext.SaveChangesAsync();
 
-        var characterService = new Mock<ICharacterService>();
+        var characterService = new Mock<ICharacterRepository>();
         characterService.Setup(cs => cs.GetCharacterAsync("briv"))
             .ReturnsAsync(Fixture.BasicCharacter);
 
@@ -172,16 +171,15 @@ public class HitpointServiceTest : IClassFixture<TestDatabaseFixture>
     {
         // Arrange
         await using var dbContext = Fixture.CreateContext();
-        dbContext.CharacterHealthStates.Add(new CharacterHealthState()
+        dbContext.CharacterHealthStates.Add(new CharacterHitpointState()
         {
             CharacterId = "briv",
             Hitpoints = 25,
             TemporaryHitpoints = 10,
-            MaxHitpoints = 25
         });
         await dbContext.SaveChangesAsync();
 
-        var characterService = new Mock<ICharacterService>();
+        var characterService = new Mock<ICharacterRepository>();
         characterService.Setup(cs => cs.GetCharacterAsync("briv"))
             .ReturnsAsync(Fixture.BasicCharacter);
 
@@ -215,7 +213,7 @@ public class HitpointServiceTest : IClassFixture<TestDatabaseFixture>
         // Arrange
         await using var dbContext = Fixture.CreateContext();
 
-        var characterService = new Mock<ICharacterService>();
+        var characterService = new Mock<ICharacterRepository>();
         characterService.Setup(cs => cs.GetCharacterAsync("briv"))
             .ReturnsAsync(Fixture.BasicCharacter);
 
@@ -235,7 +233,7 @@ public class HitpointServiceTest : IClassFixture<TestDatabaseFixture>
         // Arrange
         await using var dbContext = Fixture.CreateContext();
 
-        var characterService = new Mock<ICharacterService>();
+        var characterService = new Mock<ICharacterRepository>();
         characterService.Setup(cs => cs.GetCharacterAsync(It.IsAny<string>()))
             .ReturnsAsync((Character?)null);
 
@@ -248,7 +246,7 @@ public class HitpointServiceTest : IClassFixture<TestDatabaseFixture>
         result.IsSuccess.ShouldBeFalse();
         result.Error.ShouldBe("Character not found.");
     }
-    
+
     [Theory]
     [InlineData(0, 25, 25, 0)]
     [InlineData(5, 25, 25, 0)]
@@ -261,16 +259,15 @@ public class HitpointServiceTest : IClassFixture<TestDatabaseFixture>
     {
         // Arrange
         await using var dbContext = Fixture.CreateContext();
-        dbContext.CharacterHealthStates.Add(new CharacterHealthState()
+        dbContext.CharacterHealthStates.Add(new CharacterHitpointState()
         {
             CharacterId = "briv",
             Hitpoints = initialHp,
             TemporaryHitpoints = 0,
-            MaxHitpoints = 25
         });
         await dbContext.SaveChangesAsync();
 
-        var characterService = new Mock<ICharacterService>();
+        var characterService = new Mock<ICharacterRepository>();
         characterService.Setup(cs => cs.GetCharacterAsync("briv"))
             .ReturnsAsync(Fixture.BasicCharacter);
 
@@ -303,7 +300,7 @@ public class HitpointServiceTest : IClassFixture<TestDatabaseFixture>
         await using var dbContext = Fixture.CreateContext();
         await dbContext.SaveChangesAsync();
 
-        var characterService = new Mock<ICharacterService>();
+        var characterService = new Mock<ICharacterRepository>();
         characterService.Setup(cs => cs.GetCharacterAsync("briv"))
             .ReturnsAsync((Character?)null);
 
@@ -314,7 +311,7 @@ public class HitpointServiceTest : IClassFixture<TestDatabaseFixture>
 
         // Assert
         result.IsSuccess.ShouldBeFalse();
-        result.Error.ShouldBe("Failed to retrieve or create character health state.");
+        result.Error.ShouldBe("Character not found.");
     }
 
 
@@ -325,16 +322,15 @@ public class HitpointServiceTest : IClassFixture<TestDatabaseFixture>
     {
         // Arrange
         await using var dbContext = Fixture.CreateContext();
-        dbContext.CharacterHealthStates.Add(new CharacterHealthState()
+        dbContext.CharacterHealthStates.Add(new CharacterHitpointState()
         {
             CharacterId = "briv",
             Hitpoints = 15,
             TemporaryHitpoints = 0,
-            MaxHitpoints = 25
         });
         await dbContext.SaveChangesAsync();
 
-        var characterService = new Mock<ICharacterService>();
+        var characterService = new Mock<ICharacterRepository>();
         characterService.Setup(cs => cs.GetCharacterAsync("briv"))
             .ReturnsAsync(Fixture.BasicCharacter);
 
@@ -365,16 +361,15 @@ public class HitpointServiceTest : IClassFixture<TestDatabaseFixture>
     {
         // Arrange
         await using var dbContext = Fixture.CreateContext();
-        dbContext.CharacterHealthStates.Add(new CharacterHealthState()
+        dbContext.CharacterHealthStates.Add(new CharacterHitpointState()
         {
             CharacterId = "briv",
             Hitpoints = 25,
             TemporaryHitpoints = initialTempHp,
-            MaxHitpoints = 25
         });
         await dbContext.SaveChangesAsync();
 
-        var characterService = new Mock<ICharacterService>();
+        var characterService = new Mock<ICharacterRepository>();
         characterService.Setup(cs => cs.GetCharacterAsync("briv"))
             .ReturnsAsync(Fixture.BasicCharacter);
 
@@ -398,7 +393,7 @@ public class HitpointServiceTest : IClassFixture<TestDatabaseFixture>
         charStatus.Hitpoints.ShouldBe(25);
         charStatus.TemporaryHitpoints.ShouldBe(expectedTempHp);
     }
-    
+
     [Fact]
     public async Task AddTemporaryHitpointsAsync_WithUnknownCharacter_ShouldReturnError()
     {
@@ -406,7 +401,7 @@ public class HitpointServiceTest : IClassFixture<TestDatabaseFixture>
         await using var dbContext = Fixture.CreateContext();
         await dbContext.SaveChangesAsync();
 
-        var characterService = new Mock<ICharacterService>();
+        var characterService = new Mock<ICharacterRepository>();
         characterService.Setup(cs => cs.GetCharacterAsync("briv"))
             .ReturnsAsync((Character?)null);
 
@@ -419,7 +414,7 @@ public class HitpointServiceTest : IClassFixture<TestDatabaseFixture>
         result.IsSuccess.ShouldBeFalse();
         result.Error.ShouldBe("Failed to retrieve or create character health state.");
     }
-    
+
     [Theory]
     [InlineData(-1)]
     [InlineData(int.MinValue)]
@@ -427,16 +422,15 @@ public class HitpointServiceTest : IClassFixture<TestDatabaseFixture>
     {
         // Arrange
         await using var dbContext = Fixture.CreateContext();
-        dbContext.CharacterHealthStates.Add(new CharacterHealthState()
+        dbContext.CharacterHealthStates.Add(new CharacterHitpointState()
         {
             CharacterId = "briv",
             Hitpoints = 15,
             TemporaryHitpoints = 0,
-            MaxHitpoints = 25
         });
         await dbContext.SaveChangesAsync();
 
-        var characterService = new Mock<ICharacterService>();
+        var characterService = new Mock<ICharacterRepository>();
         characterService.Setup(cs => cs.GetCharacterAsync("briv"))
             .ReturnsAsync(Fixture.BasicCharacter);
 

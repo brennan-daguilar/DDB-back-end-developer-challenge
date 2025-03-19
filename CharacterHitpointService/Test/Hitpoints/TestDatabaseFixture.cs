@@ -1,5 +1,6 @@
 ﻿using CharacterHitpointService.Hitpoints;
-using CharacterHitpointService.Models;
+using CharacterHitpointService.Infrastructure;
+using CharacterHitpointService.Shared.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace Test.Hitpoints;
