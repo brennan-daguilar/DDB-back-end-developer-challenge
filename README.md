@@ -1,63 +1,130 @@
 # DDB Back End Developer Challenge
 
 ### Overview
-This task focuses on creating an API for managing a player character's Hit Points (HP) within our game. The API will enable clients to perform various operations related to HP, including dealing damage of different types, considering character resistances and immunities, healing, and adding temporary Hit Points. The task requires building a service that interacts with HP data provided in the `briv.json` file and persists throughout the application's lifetime.
 
-### Task Requirements
+This is a sample service for managing player characters Hit Points, built for the DnD Beyond Backend Developer
+Challenge.
 
-#### API Operations
-1. **Deal Damage**
-    - Implement the ability for clients to deal damage of different types (e.g., bludgeoning, fire) to a player character.
-    - Ensure that the API calculates damage while considering character resistances and immunities.
+## API Endpoints
 
-    > Suppose a player character is hit by an attack that deals Piercing damage, and the attacker rolls a 14 on the damage's Hit Die (with a Piercing damage type). `[Character Hit Points - damage: 25 - 14 = 11]`
+### Deal Damage
 
-2. **Heal**
-    - Enable clients to heal a player character, increasing their HP.
+- `POST /characters/{characterId}/damage`
 
-3. **Add Temporary Hit Points**
-    - Implement the functionality to add temporary Hit Points to a player character.
-    - Ensure that temporary Hit Points follow the rules: they are not additive, always taking the higher value, and cannot be healed.
+    #### Request Body
 
-    > Imagine a player character named "Eldric" currently has 11 Hit Points (HP) and no temporary Hit Points. He finds a magical item that grants him an additional 10 HP during the next fight. When the attacker rolls a 19, Eldric will lose all 10 temporary Hit Points and 9 from his player HP.
+    ```json
+    {
+      "amount": 10,
+      "type": "bludgeoning"
+    }
+    ```
 
-#### Implementation Details
-- Build the API using either C# or NodeJS.
-- Ensure that character information, including HP, is initialized during the start of the application. Developers do not need to calculate HP; it is provided in the `briv.json` file.
-- Retrieve character information, including HP, from the `briv.json` file.
+    #### Example Response
 
+    ```json
+    {
+      "characterId": "briv",
+      "before": {
+        "hitpoints": 25,
+        "temporaryHitpoints": 2
+      },
+      "after": {
+        "hitpoints": 23,
+        "temporaryHitpoints": 0
+      },
+      "totalDamage": 4,
+      "resistanceEffect": "Resisted"
+    }
+    ```
 
-#### Data Storage
-- You have the flexibility to choose the data storage method for character information.
+### Heal
 
-### Instructions to Run Locally
-1. Clone the repository or obtain the project files.
-2. Install any required dependencies using your preferred package manager.
-3. Configure the API with necessary settings (e.g., database connection if applicable).
-4. Build and run the API service locally.
-5. Utilize the provided `briv.json` file as a sample character data, including HP, for testing the API.
+- `POST /characters/{characterId}/heal`
+    
+    #### Request Body
+    
+    ```json
+    {
+      "amount": 10
+    }
+    ```
+    
+    #### Example Response
+    
+    ```json
+    {
+      "characterId": "briv",
+      "before": {
+        "hitpoints": 23,
+        "temporaryHitpoints": 0
+      },
+      "after": {
+        "hitpoints": 25,
+        "temporaryHitpoints": 0
+      },
+      "actualHealed": 2
+    }
+    ```
 
-### Additional Notes
-- Temporary Hit Points take precedence over the regular HP pool and cannot be healed.
-- Characters with resistance take half damage, while characters with immunity take no damage from a damage type.
-- Use character filename as identifier
+### Add Temporary Hit Points
 
-#### Possible Damage Types in D&D
-Here is a list of possible damage types that can occur in Dungeons & Dragons (D&D). These damage types should be considered when dealing damage or implementing character resistances and immunities:
-- Bludgeoning
-- Piercing
-- Slashing
-- Fire
-- Cold
-- Acid
-- Thunder
-- Lightning
-- Poison
-- Radiant
-- Necrotic
-- Psychic
-- Force
+- `POST /characters/{characterId}/temporaryhitpoints`
 
-If you have any questions or require clarification, please reach out to your Wizards of the Coast contact, and we will provide prompt assistance.
+    #### Request Body
+    
+    ```json
+    {
+      "amount": 10
+    }
+    ```
+    
+    #### Example Response
+    
+    ```json
+    {
+      "characterId": "briv",
+      "before": {
+        "hitpoints": 21,
+        "temporaryHitpoints": 1
+      },
+      "after": {
+        "hitpoints": 21,
+        "temporaryHitpoints": 10
+      },
+      "gained": 9
+    }
+    ```
 
-Good luck with the implementation!
+## Decisions and Assumptions
+
+### Microservices
+
+From the challenge description, the goal is to manage character hit points, not the characters themselves. I've decided to consider that the character details are managed by another service. 
+
+This decision adds complication and potentially additional latency.  In a real product, I would consider whether separating hit points from the character details is worth the additional complication.  Some things to consider:
+1. How frequently do active hit points and character details change and how often do changes to one affect the other?
+2. How does this affect response latency?
+3. Can character data be cached? Is cache invalidation required?
+4. Is there an advantage in scaling the hit points service independently?
+5. Does the team/organization structure benefit from smaller limited purpose services?
+
+For the purposes of this challenge, I've included a simple mocked Character Service for retrieving character details. `ICharacterService` and `MockCharacterService` to simulate retrieving character data externally. The `CharacterRepository` uses this service to get and cache the character information when required.
+
+### Response Data
+
+For API responses, I considered some likely consumers of the API such as Maps or Sigil and what data would be useful in displaying feedback to a user.
+
+### Data Storage
+
+For simplicity, data is stored in an sqlite database.  A key-value database like DynamoDB may better fit storing character hit point states.
+
+### Caching
+
+Character details are cached using an in memory store.  This should be replaced with a proper distributed cache in a real product.
+
+Having accurate character detail is important to properly applying damage or healing.  If character details are cached, there should be a mechanism to invalidate the cache when a character's details are updated.  In this case, character details never change so this has been omitted.
+
+### Authentication and Authorization
+
+Both authentication and authorization are omitted for simplicity but in a proper product would be included.
