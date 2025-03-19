@@ -1,0 +1,317 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "CharacterHitpointService | v1",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:5102"
+    }
+  ],
+  "paths": {
+    "/character/{characterId}/damage": {
+      "post": {
+        "tags": ["Damage"],
+        "summary": "Damage a character's hit points",
+        "parameters": [
+          {
+            "name": "characterId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DamageCharacterRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DamageCharacterResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/character/{characterId}/heal": {
+      "post": {
+        "tags": ["Heal"],
+        "summary": "Heal a character's hit points",
+        "parameters": [
+          {
+            "name": "characterId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HealCharacterRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealCharacterResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/character/{characterId}/addTemporaryHitpoints": {
+      "post": {
+        "tags": ["Temporary Hit Points"],
+        "summary": "Add temporary hit points",
+        "parameters": [
+          {
+            "name": "characterId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddTemporaryHitpointsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AddTemporaryHitpointsResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AddTemporaryHitpointsRequest": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "AddTemporaryHitpointsResult": {
+        "required": ["characterId", "before", "after", "gained"],
+        "type": "object",
+        "properties": {
+          "characterId": {
+            "type": "string"
+          },
+          "before": {
+            "$ref": "#/components/schemas/CombinedHitpoints"
+          },
+          "after": {
+            "$ref": "#/components/schemas/CombinedHitpoints"
+          },
+          "gained": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "CombinedHitpoints": {
+        "required": ["hitpoints", "temporaryHitpoints"],
+        "type": "object",
+        "properties": {
+          "hitpoints": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "temporaryHitpoints": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "DamageCharacterRequest": {
+        "required": ["amount", "type"],
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "type": {
+            "type": "string"
+          }
+        }
+      },
+      "DamageCharacterResult": {
+        "required": ["characterId", "before", "after", "totalDamage"],
+        "type": "object",
+        "properties": {
+          "characterId": {
+            "type": "string"
+          },
+          "before": {
+            "$ref": "#/components/schemas/CombinedHitpoints"
+          },
+          "after": {
+            "$ref": "#/components/schemas/CombinedHitpoints"
+          },
+          "totalDamage": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "resistanceEffect": {
+            "$ref": "#/components/schemas/NullableOfDamageResistanceEffect"
+          }
+        }
+      },
+      "HealCharacterRequest": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "HealCharacterResult": {
+        "required": ["characterId", "before", "after", "healed"],
+        "type": "object",
+        "properties": {
+          "characterId": {
+            "type": "string"
+          },
+          "before": {
+            "$ref": "#/components/schemas/CombinedHitpoints"
+          },
+          "after": {
+            "$ref": "#/components/schemas/CombinedHitpoints"
+          },
+          "healed": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "HttpValidationProblemDetails": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "nullable": true
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "detail": {
+            "type": "string",
+            "nullable": true
+          },
+          "instance": {
+            "type": "string",
+            "nullable": true
+          },
+          "errors": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "NullableOfDamageResistanceEffect": {
+        "enum": ["Resisted", "Immune", null],
+        "nullable": true
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Damage"
+    },
+    {
+      "name": "Heal"
+    },
+    {
+      "name": "Temporary Hit Points"
+    }
+  ]
+}

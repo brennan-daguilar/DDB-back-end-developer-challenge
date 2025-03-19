@@ -165,7 +165,7 @@ public class HitpointService
             CharacterId = characterId,
             Before = before,
             After = new CombinedHitpoints(health.Hitpoints, health.TemporaryHitpoints),
-            ActualHealed = health.Hitpoints - before.Hitpoints
+            Healed = health.Hitpoints - before.Hitpoints
         });
     }
 

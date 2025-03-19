@@ -10,15 +10,17 @@ public class AddTemporaryHitpointsEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
-        app.MapPost("/character/{characterId}/addTemporaryHitpoints",
-            HandleAsync);
+        app.MapPost("/character/{characterId}/addTemporaryHitpoints", HandleAsync)
+            .WithTags("Temporary Hit Points")
+            .WithSummary("Add temporary hit points");
     }
 
     private async Task<Results<
         Ok<AddTemporaryHitpointsResult>,
         ValidationProblem,
         ProblemHttpResult
-    >> HandleAsync(string characterId, AddTemporaryHitpointsRequest request, IValidator<AddTemporaryHitpointsRequest> validator,
+    >> HandleAsync(string characterId, AddTemporaryHitpointsRequest request,
+        IValidator<AddTemporaryHitpointsRequest> validator,
         HitpointService hitpointService)
     {
         request.CharacterId = characterId;

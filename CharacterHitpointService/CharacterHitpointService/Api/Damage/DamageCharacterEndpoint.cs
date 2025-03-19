@@ -11,7 +11,9 @@ public class DamageCharacterEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
-        app.MapPost("/character/{characterId}/damage", HandleAsync);
+        app.MapPost("/character/{characterId}/damage", HandleAsync)
+            .WithTags("Damage")
+            .WithSummary("Damage a character's hit points");
     }
 
     private async Task<Results<

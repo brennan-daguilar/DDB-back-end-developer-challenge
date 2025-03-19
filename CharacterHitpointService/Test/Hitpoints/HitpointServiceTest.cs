@@ -284,7 +284,7 @@ public class HitpointServiceTest : IClassFixture<TestDatabaseFixture>
         response.CharacterId.ShouldBe("briv");
         response.Before.ShouldBe(new CombinedHitpoints(initialHp, 0));
         response.After.ShouldBe(new CombinedHitpoints(expectedHp, 0));
-        response.ActualHealed.ShouldBe(expectedHealAmount);
+        response.Healed.ShouldBe(expectedHealAmount);
 
         var charStatus = await dbContext.CharacterHealthStates.FindAsync("briv");
         charStatus.ShouldNotBeNull();

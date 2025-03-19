@@ -10,9 +10,9 @@ public class HealCharacterEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
-        app.MapPost("/character/{characterId}/heal",
-            HandleAsync
-        );
+        app.MapPost("/character/{characterId}/heal", HandleAsync)
+            .WithTags("Heal")
+            .WithSummary("Heal a character's hit points");
     }
 
     private async Task<Results<
